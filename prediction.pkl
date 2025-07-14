@@ -1,0 +1,161 @@
+//  prediction model .. with user inputs
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
+
+# Load the dataset
+df = pd.read_csv("/content/mock_fish_catch_dataset_10000.csv")
+
+#
+print("\n--- Sample Data Preview ---")
+print(df.head())
+
+print("\n--- Data Info ---")
+df.info()
+
+print("\n--- Descriptive Statistics ---")
+print(df.describe())
+
+print("\n--- Value Counts for Categorical Columns (after encoding) ---")
+for col in ['Tide', 'Moon_Phase', 'Fish_Species', 'Catch_Type']:
+    if col in df.columns:
+        print(f"\n{col}:\n{df[col].value_counts()}")
+
+# Display the mapping from encoded numerical species back to original species names
+print("\n--- Fish Species Encoding Mapping ---")
+if 'species_encoder' in globals():
+    species_mapping = {i: species for i, species in enumerate(species_encoder.classes_)}
+    print(species_mapping)
+elif 'species_mapping' in globals() and species_mapping is not None:
+     # If species_encoder was not found, use the loaded species_mapping
+     print(species_mapping)
+else:
+    print("Species encoding mapping not available.")
+
+print("\n--- Distribution of Catch (kg) ---")
+plt.figure(figsize=(8, 5))
+sns.histplot(df['Catch_kg'], kde=True)
+plt.title('Distribution of Fish Catch (kg)')
+plt.xlabel('Catch (kg)')
+plt.ylabel('Frequency')
+plt.grid(True)
+plt.show()
+
+print("\n--- Correlation Matrix ---")
+plt.figure(figsize=(10, 8))
+sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Correlation Matrix')
+plt.show()
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
+
+# Load the dataset
+df = pd.read_csv("/mock_fish_catch_dataset_10000.csv")
+
+#
+print("\n--- Sample Data Preview ---")
+print(df.head())
+
+print("\n--- Data Info ---")
+df.info()
+
+print("\n--- Descriptive Statistics ---")
+print(df.describe())
+
+print("\n--- Value Counts for Categorical Columns (after encoding) ---")
+for col in ['Tide', 'Moon_Phase', 'Fish_Species', 'Catch_Type']:
+    if col in df.columns:
+        print(f"\n{col}:\n{df[col].value_counts()}")
+
+# Display the mapping from encoded numerical species back to original species names
+print("\n--- Fish Species Encoding Mapping ---")
+if 'species_encoder' in globals():
+    species_mapping = {i: species for i, species in enumerate(species_encoder.classes_)}
+    print(species_mapping)
+elif 'species_mapping' in globals() and species_mapping is not None:
+     # If species_encoder was not found, use the loaded species_mapping
+     print(species_mapping)
+else:
+    print("Species encoding mapping not available.")
+
+
+// loading dataset... with precision
+
+# Load the dataset
+df = pd.read_csv("/mock_fish_catch_dataset_10000.csv")
+new_latitude = 11.8
+new_longitude = 79.3
+new_depth = 40.0
+new_sst = 27.9
+new_salinity = 35.1
+new_chlorophyll = 0.55
+
+predicted_catch, predicted_species = make_prediction(
+    latitude=new_latitude,
+    longitude=new_longitude,
+    depth=new_depth,
+    sst=new_sst,
+    salinity=new_salinity,
+    chlorophyll=new_chlorophyll
+)
+
+if predicted_catch is not None:
+    print("\n--- New Prediction ---")
+    print(f"Predicted Catch (kg): {predicted_catch:.2f}")
+    print(f"Predicted Fish Species: {predicted_species}")
+
+// correlation matrixs 
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
+
+# Load the dataset
+df = pd.read_csv("/content/mock_fish_catch_dataset_10000.csv")
+
+#
+print("\n--- Sample Data Preview ---")
+print(df.head())
+
+print("\n--- Data Info ---")
+df.info()
+
+print("\n--- Descriptive Statistics ---")
+print(df.describe())
+
+print("\n--- Value Counts for Categorical Columns (after encoding) ---")
+for col in ['Tide', 'Moon_Phase', 'Fish_Species', 'Catch_Type']:
+    if col in df.columns:
+        print(f"\n{col}:\n{df[col].value_counts()}")
+
+# Display the mapping from encoded numerical species back to original species names
+print("\n--- Fish Species Encoding Mapping ---")
+if 'species_encoder' in globals():
+    species_mapping = {i: species for i, species in enumerate(species_encoder.classes_)}
+    print(species_mapping)
+elif 'species_mapping' in globals() and species_mapping is not None:
+     # If species_encoder was not found, use the loaded species_mapping
+     print(species_mapping)
+else:
+    print("Species encoding mapping not available.")
+
+print("\n--- Distribution of Catch (kg) ---")
+plt.figure(figsize=(8, 5))
+sns.histplot(df['Catch_kg'], kde=True)
+plt.title('Distribution of Fish Catch (kg)')
+plt.xlabel('Catch (kg)')
+plt.ylabel('Frequency')
+plt.grid(True)
+plt.show()
+
+print("\n--- Correlation Matrix ---")
+plt.figure(figsize=(10, 8))
+sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Correlation Matrix')
+plt.show()
+
