@@ -1,0 +1,234 @@
+<body>
+    <div class="container">
+        <!-- Screen 1: Home Screen -->
+        <div class="screen active" id="home">
+            <div class="home-screen">
+                <h1 class="app-title wave-animation">🐟 SmartFishNet</h1>
+                <p class="tagline">AI-Powered Real-Time Fish Catch Prediction</p>
+                <button class="btn" onclick="showScreen('input')">🎣 Start Prediction</button>
+                <div class="language-selector">
+                    <select id="language">
+                        <option value="en">🇬🇧 English</option>
+                        <option value="ta">🇮🇳 Tamil</option>
+                        <option value="hi">🇮🇳 Hindi</option>
+                        <option value="es">🇪🇸 Spanish</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Prediction Input Screen -->
+        <div class="screen" id="input">
+            <div class="input-screen">
+                <h2 class="screen-title">🧾 Enter Prediction Data</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="location">📍 Location</label>
+                        <input type="text" id="location" placeholder="Auto-detected or enter manually">
+                        <button class="btn btn-secondary" style="margin-top: 10px; padding: 8px 16px; font-size: 0.9rem;" onclick="getLocation()">📍 Get GPS Location</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="date">📅 Date</label>
+                        <input type="date" id="date">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="depth">📏 Depth (meters)</label>
+                        <div class="slider-container">
+                            <input type="range" id="depth" class="slider" min="0" max="100" value="20" oninput="updateSliderValue('depth')">
+                            <div class="slider-value" id="depth-value">20m</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sst">🌡️ Sea Surface Temperature (°C)</label>
+                        <input type="number" id="sst" placeholder="e.g., 28.5" step="0.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="salinity">🧂 Salinity (ppt)</label>
+                        <input type="number" id="salinity" placeholder="e.g., 35.5" step="0.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="chlorophyll">🌱 Chlorophyll Level (mg/m³)</label>
+                        <input type="number" id="chlorophyll" placeholder="e.g., 0.5" step="0.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tide">🌊 Tide Level</label>
+                        <select id="tide">
+                            <option value="high">High Tide</option>
+                            <option value="moderate">Moderate Tide</option>
+                            <option value="low">Low Tide</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="moon">🌙 Moon Phase</label>
+                        <select id="moon">
+                            <option value="new">New Moon</option>
+                            <option value="waxing">Waxing Crescent</option>
+                            <option value="first">First Quarter</option>
+                            <option value="waxing-gibbous">Waxing Gibbous</option>
+                            <option value="full">Full Moon</option>
+                            <option value="waning-gibbous">Waning Gibbous</option>
+                            <option value="third">Third Quarter</option>
+                            <option value="waning">Waning Crescent</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="btn back-btn" onclick="showScreen('home')">⬅️ Back</button>
+                    <button class="btn" onclick="predictCatch()">🎯 Predict Catch</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 3: Prediction Result Screen -->
+        <div class="screen" id="result">
+            <div class="result-screen">
+                <div class="loading" id="loading">
+                    <div class="loading-spinner"></div>
+                    <h3>🤖 AI is analyzing ocean conditions...</h3>
+                    <p>Please wait while we process your data</p>
+                </div>
+                
+                <div id="results" style="display: none;">
+                    <h2 class="screen-title">📊 Prediction Results</h2>
+                    
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <div class="fish-icon">🐟</div>
+                            <h3>Predicted Fish Species</h3>
+                            <div class="value" id="predicted-species">Mackerel</div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <div class="fish-icon">⚖️</div>
+                            <h3>Predicted Catch Weight</h3>
+                            <div class="value" id="predicted-weight">12.5 kg</div>
+                        </div>
+                    </div>
+                    
+                    <div class="weather-alert">
+                        <h3>🌩️ Weather Alert</h3>
+                        <p id="weather-warning">Moderate wind conditions expected. Safe for fishing.</p>
+                    </div>
+                    
+                    <div class="trip-estimator">
+                        <h3>⛽ Trip Estimator</h3>
+                        <div class="trip-details">
+                            <div class="trip-detail">
+                                <span class="value" id="fuel-estimate">15L</span>
+                                <span>Estimated Fuel</span>
+                            </div>
+                            <div class="trip-detail">
+                                <span class="value" id="time-estimate">4.5h</span>
+                                <span>Estimated Time</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>📈 Depth-wise Prediction Chart</h3>
+                        <canvas id="depthChart" width="400" height="200"></canvas>
+                    </div>
+                    
+                    <div class="map-container">
+                        <div>
+                            <h3>🗺️ Fishing Zone Heatmap</h3>
+                            <p>High-potential fishing zones marked in your area</p>
+                            <div style="margin-top: 20px;">
+                                <span style="background: #27ae60; padding: 5px 10px; border-radius: 5px; margin-right: 10px;">🟢 High Potential</span>
+                                <span style="background: #f39c12; padding: 5px 10px; border-radius: 5px; margin-right: 10px;">🟡 Medium Potential</span>
+                                <span style="background: #e74c3c; padding: 5px 10px; border-radius: 5px;">🔴 Low Potential</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn back-btn" onclick="showScreen('input')">⬅️ Back to Input</button>
+                        <button class="btn" onclick="showScreen('logging')">📝 Log My Catch</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 4: Catch Logging Screen -->
+        <div class="screen" id="logging">
+            <div class="input-screen">
+                <h2 class="screen-title">📝 Log Your Actual Catch</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="catch-date">📅 Catch Date</label>
+                        <input type="date" id="catch-date">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="actual-weight">⚖️ Actual Catch Weight (kg)</label>
+                        <input type="number" id="actual-weight" placeholder="e.g., 10.5" step="0.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fish-type">🐟 Fish Type Caught</label>
+                        <select id="fish-type">
+                            <option value="mackerel">Mackerel</option>
+                            <option value="sardine">Sardine</option>
+                            <option value="tuna">Tuna</option>
+                            <option value="pomfret">Pomfret</option>
+                            <option value="kingfish">Kingfish</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="catch-location">📍 Catch Location</label>
+                        <input type="text" id="catch-location" placeholder="Location where fish was caught">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="suggestions">💡 Suggestions for Improvement</label>
+                    <textarea id="suggestions" rows="4" placeholder="How can we improve our predictions? Any feedback is valuable!"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="photo">📸 Upload Photo (Optional)</label>
+                    <input type="file" id="photo" accept="image/*">
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="btn back-btn" onclick="showScreen('result')">⬅️ Back to Results</button>
+                    <button class="btn" onclick="submitCatch()">📤 Submit Catch Data</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 5: Thank You Screen -->
+        <div class="screen" id="thankyou">
+            <div class="thank-you-screen">
+                <h2>🎉 Thank You!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px;">Your contribution helps improve our AI predictions for the entire fishing community!</p>
+                
+                <div>
+                    <h3>Rate Prediction Accuracy</h3>
+                    <div class="star-rating">
+                        <span class="star" onclick="rate(1)">⭐</span>
+                        <span class="star" onclick="rate(2)">⭐</span>
+                        <span class="star" onclick="rate(3)">⭐</span>
+                        <span class="star" onclick="rate(4)">⭐</span>
+                        <span class="star" onclick="rate(5)">⭐</span>
+                    </div>
+                    <p id="rating-text">Click stars to rate our prediction</p>
+                </div>
+                
+                <div style="margin-top: 40px;">
+                    <button class="btn" onclick="showScreen('home')">🏠 Home</button>
+                    <button class="btn btn-secondary" onclick="showScreen('input')">🔄 New Prediction</button>
+                </div>
+            </div>
+        </div>
+    </div>
