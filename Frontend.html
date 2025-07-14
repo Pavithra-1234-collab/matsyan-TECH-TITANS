@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFishNet - AI Fish Catch Prediction</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes wave {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .wave-animation {
+            animation: wave 3s ease-in-out infinite;
+        }
+        
+        /* Home Screen Styles */
+        .home-screen {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400"><path d="M0,200 Q300,100 600,200 T1200,200 V400 H0 Z" fill="%23ffffff20"/><path d="M0,250 Q300,150 600,250 T1200,250 V400 H0 Z" fill="%23ffffff15"/></svg>');
+            background-size: cover;
+            border-radius: 20px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .app-title {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+        
+        .tagline {
+            font-size: 1.4rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #54a0ff, #2e86de);
+            box-shadow: 0 4px 15px rgba(84,160,255,0.3);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 6px 20px rgba(84,160,255,0.4);
+        }
+        
+        .language-selector {
+            margin-top: 30px;
+        }
+        
+        .language-selector select {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+        }
+        
+        /* Input Screen Styles */
+        .input-screen {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .screen-title {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #34495e;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .slider-container {
+            margin-top: 10px;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+        }
+        
+        .slider-value {
+            text-align: center;
+            margin-top: 5px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        /* Result Screen Styles */
+        .result-screen {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .result-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .result-card .value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .weather-alert {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
+        .map-container {
+            background: linear-gradient(135deg, #54a0ff, #2e86de);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Thank You Screen Styles */
+        .thank-you-screen {
+            background: white;
+            border-radius: 20px;
+            padding: 60px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .thank-you-screen h2 {
+            font-size: 2.5rem;
+            color: #27ae60;
+            margin-bottom: 20px;
+        }
+        
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .star {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .star:hover,
+        .star.active {
+            color: #f39c12;
+        }
+        
+        .back-btn {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            margin-right: 10px;
+        }
+        
+        .back-btn:hover {
+            box-shadow: 0 6px 20px rgba(149,165,166,0.4);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .app-title {
+                font-size: 2.5rem;
+            }
+            
+            .tagline {
+                font-size: 1.2rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-screen,
+            .result-screen {
+                padding: 20px;
+            }
+        }
+        
+        /* Fish species icons */
+        .fish-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .trip-estimator {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        .trip-estimator h3 {
+            margin-bottom: 15px;
+        }
+        
+        .trip-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .trip-detail {
+            text-align: center;
+        }
+        
+        .trip-detail .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Screen 1: Home Screen -->
+        <div class="screen active" id="home">
+            <div class="home-screen">
+                <h1 class="app-title wave-animation">🐟 SmartFishNet</h1>
+                <p class="tagline">AI-Powered Real-Time Fish Catch Prediction</p>
+                <button class="btn" onclick="showScreen('input')">🎣 Start Prediction</button>
+                <div class="language-selector">
+                    <select id="language">
+                        <option value="en">🇬🇧 English</option>
+                        <option value="ta">🇮🇳 Tamil</option>
+                        <option value="hi">🇮🇳 Hindi</option>
+                        <option value="es">🇪🇸 Spanish</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Prediction Input Screen -->
+        <div class="screen" id="input">
+            <div class="input-screen">
+                <h2 class="screen-title">🧾 Enter Prediction Data</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="location">📍 Location</label>
+                        <input type="text" id="location" placeholder="Auto-detected or enter manually">
+                        <button class="btn btn-secondary" style="margin-top: 10px; padding: 8px 16px; font-size: 0.9rem;" onclick="getLocation()">📍 Get GPS Location</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="date">📅 Date</label>
+                        <input type="date" id="date">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="depth">📏 Depth (meters)</label>
+                        <div class="slider-container">
+                            <input type="range" id="depth" class="slider" min="0" max="100" value="20" oninput="updateSliderValue('depth')">
+                            <div class="slider-value" id="depth-value">20m</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sst">🌡️ Sea Surface Temperature (°C)</label>
+                        <input type="number" id="sst" placeholder="e.g., 28.5" step="0.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="salinity">🧂 Salinity (ppt)</label>
+                        <input type="number" id="salinity" placeholder="e.g., 35.5" step="0.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="chlorophyll">🌱 Chlorophyll Level (mg/m³)</label>
+                        <input type="number" id="chlorophyll" placeholder="e.g., 0.5" step="0.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tide">🌊 Tide Level</label>
+                        <select id="tide">
+                            <option value="high">High Tide</option>
+                            <option value="moderate">Moderate Tide</option>
+                            <option value="low">Low Tide</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="moon">🌙 Moon Phase</label>
+                        <select id="moon">
+                            <option value="new">New Moon</option>
+                            <option value="waxing">Waxing Crescent</option>
+                            <option value="first">First Quarter</option>
+                            <option value="waxing-gibbous">Waxing Gibbous</option>
+                            <option value="full">Full Moon</option>
+                            <option value="waning-gibbous">Waning Gibbous</option>
+                            <option value="third">Third Quarter</option>
+                            <option value="waning">Waning Crescent</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="btn back-btn" onclick="showScreen('home')">⬅️ Back</button>
+                    <button class="btn" onclick="predictCatch()">🎯 Predict Catch</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 3: Prediction Result Screen -->
+        <div class="screen" id="result">
+            <div class="result-screen">
+                <div class="loading" id="loading">
+                    <div class="loading-spinner"></div>
+                    <h3>🤖 AI is analyzing ocean conditions...</h3>
+                    <p>Please wait while we process your data</p>
+                </div>
+                
+                <div id="results" style="display: none;">
+                    <h2 class="screen-title">📊 Prediction Results</h2>
+                    
+                    <div class="results-grid">
+                        <div class="result-card">
+                            <div class="fish-icon">🐟</div>
+                            <h3>Predicted Fish Species</h3>
+                            <div class="value" id="predicted-species">Mackerel</div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <div class="fish-icon">⚖️</div>
+                            <h3>Predicted Catch Weight</h3>
+                            <div class="value" id="predicted-weight">12.5 kg</div>
+                        </div>
+                    </div>
+                    
+                    <div class="weather-alert">
+                        <h3>🌩️ Weather Alert</h3>
+                        <p id="weather-warning">Moderate wind conditions expected. Safe for fishing.</p>
+                    </div>
+                    
+                    <div class="trip-estimator">
+                        <h3>⛽ Trip Estimator</h3>
+                        <div class="trip-details">
+                            <div class="trip-detail">
+                                <span class="value" id="fuel-estimate">15L</span>
+                                <span>Estimated Fuel</span>
+                            </div>
+                            <div class="trip-detail">
+                                <span class="value" id="time-estimate">4.5h</span>
+                                <span>Estimated Time</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3>📈 Depth-wise Prediction Chart</h3>
+                        <canvas id="depthChart" width="400" height="200"></canvas>
+                    </div>
+                    
+                    <div class="map-container">
+                        <div>
+                            <h3>🗺️ Fishing Zone Heatmap</h3>
+                            <p>High-potential fishing zones marked in your area</p>
+                            <div style="margin-top: 20px;">
+                                <span style="background: #27ae60; padding: 5px 10px; border-radius: 5px; margin-right: 10px;">🟢 High Potential</span>
+                                <span style="background: #f39c12; padding: 5px 10px; border-radius: 5px; margin-right: 10px;">🟡 Medium Potential</span>
+                                <span style="background: #e74c3c; padding: 5px 10px; border-radius: 5px;">🔴 Low Potential</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn back-btn" onclick="showScreen('input')">⬅️ Back to Input</button>
+                        <button class="btn" onclick="showScreen('logging')">📝 Log My Catch</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 4: Catch Logging Screen -->
+        <div class="screen" id="logging">
+            <div class="input-screen">
+                <h2 class="screen-title">📝 Log Your Actual Catch</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="catch-date">📅 Catch Date</label>
+                        <input type="date" id="catch-date">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="actual-weight">⚖️ Actual Catch Weight (kg)</label>
+                        <input type="number" id="actual-weight" placeholder="e.g., 10.5" step="0.1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fish-type">🐟 Fish Type Caught</label>
+                        <select id="fish-type">
+                            <option value="mackerel">Mackerel</option>
+                            <option value="sardine">Sardine</option>
+                            <option value="tuna">Tuna</option>
+                            <option value="pomfret">Pomfret</option>
+                            <option value="kingfish">Kingfish</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="catch-location">📍 Catch Location</label>
+                        <input type="text" id="catch-location" placeholder="Location where fish was caught">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="suggestions">💡 Suggestions for Improvement</label>
+                    <textarea id="suggestions" rows="4" placeholder="How can we improve our predictions? Any feedback is valuable!"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="photo">📸 Upload Photo (Optional)</label>
+                    <input type="file" id="photo" accept="image/*">
+                </div>
+                
+                <div style="text-align: center;">
+                    <button class="btn back-btn" onclick="showScreen('result')">⬅️ Back to Results</button>
+                    <button class="btn" onclick="submitCatch()">📤 Submit Catch Data</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 5: Thank You Screen -->
+        <div class="screen" id="thankyou">
+            <div class="thank-you-screen">
+                <h2>🎉 Thank You!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px;">Your contribution helps improve our AI predictions for the entire fishing community!</p>
+                
+                <div>
+                    <h3>Rate Prediction Accuracy</h3>
+                    <div class="star-rating">
+                        <span class="star" onclick="rate(1)">⭐</span>
+                        <span class="star" onclick="rate(2)">⭐</span>
+                        <span class="star" onclick="rate(3)">⭐</span>
+                        <span class="star" onclick="rate(4)">⭐</span>
+                        <span class="star" onclick="rate(5)">⭐</span>
+                    </div>
+                    <p id="rating-text">Click stars to rate our prediction</p>
+                </div>
+                
+                <div style="margin-top: 40px;">
+                    <button class="btn" onclick="showScreen('home')">🏠 Home</button>
+                    <button class="btn btn-secondary" onclick="showScreen('input')">🔄 New Prediction</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            document.getElementById('catch-date').value = today;
+            
+            // Auto-detect location if possible
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    document.getElementById('location').value = `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`;
+                });
+            }
+        });
+
+        // Screen navigation
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Slider value update
+        function updateSliderValue(sliderId) {
+            const slider = document.getElementById(sliderId);
+            const valueElement = document.getElementById(sliderId + '-value');
+            valueElement.textContent = slider.value + 'm';
+        }
+
+        // GPS location
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    document.getElementById('location').value = `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`;
+                }, function() {
+                    alert('Unable to get location. Please enter manually.');
+                });
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+
+        // Prediction function
+        function predictCatch() {
+            showScreen('result');
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            // Simulate AI processing
+            setTimeout(() => {
+                // Hide loading and show results
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
+                
+                // Generate predictions based on inputs
+                const depth = parseInt(document.getElementById('depth').value);
+                const sst = parseFloat(document.getElementById('sst').value) || 28;
+                const tide = document.getElementById('tide').value;
+                const moon = document.getElementById('moon').value;
+                
+                // Simple prediction logic
+                const fishSpecies = ['Mackerel', 'Sardine', 'Tuna', 'Pomfret', 'Kingfish'];
+                const species = fishSpecies[Math.floor(Math.random() * fishSpecies.length)];
+                const weight = (Math.random() * 20 + 5).toFixed(1);
+                
+                document.getElementById('predicted-species').textContent = species;
+                document.getElementById('predicted-weight').textContent = weight + ' kg';
+                
+                // Weather warning
+                const warnings = [
+                    'Moderate wind conditions expected. Safe for fishing.',
+                    'High waves predicted. Exercise caution.',
+                    'Perfect weather conditions for fishing!',
+                    'Light rain expected. Bring waterproof gear.'
+                ];
+                document.getElementById('weather-warning').textContent = warnings[Math.floor(Math.random() * warnings.length)];
+                
+                // Trip estimates
+                document.getElementById('fuel-estimate').textContent = (depth * 0.3 + Math.random() * 10).toFixed(1) + 'L';
+                document.getElementById('time-estimate').textContent = (depth * 0.1 + Math.random() * 3 + 2).toFixed(1) + 'h';
+                
+                // Create depth chart
+                createDepthChart();
+            }, 3000);
+        }
+
+        // Create depth chart
+        function createDepthChart() {
+            const ctx = document.getElementById('depthChart').getContext('2d');
+            
+            // Generate sample data
+            const depths = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+            const catches = depths.map(d => Math.max(0, 20 - d * 0.15 + Math.random() * 8));
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: depths.map(d => d + 'm'),
+                    datasets: [{
+                        label: 'Predicted Catch (kg)',
+                        data: catches,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Catch Weight (kg)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Depth (meters)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Submit catch data
+        function submitCatch() {
+            const weight = document.getElementById('actual-weight').value;
+            const fishType = document.getElementById('fish-type').value;
+            
+            if (!weight || !fishType) {
+                alert('Please fill in the required fields (weight and fish type).');
+                return;
+            }
+            
+            // Simulate data submission
+            setTimeout(() => {
+                showScreen('thankyou');
+            }, 1000);
+        }
+
+        // Rating function
+        function rate(stars) {
+            const starElements = document.querySelectorAll('.star');
+            starElements.forEach((star, index) => {
+                if (index < stars) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+            
+            const messages = [
+                'We appreciate your feedback!',
+                'Thanks for rating! We\'ll improve.',
+                'Good to know! We\'ll keep working.',
+                'Great! We\'re glad it helped.',
+                'Excellent! Thanks for using SmartFishNet!'
+            ];
+            
+            document.getElementById('rating-text').textContent = messages[stars - 1];
+        }
+
+        // Language change handler
+        document.getElementById('language').addEventListener('change', function() {
+            const lang = this.value;
+            // In a real app, this would trigger translation
+            console.log('Language changed to:', lang);
+        });
+    </script>
+</body>
+</html>
