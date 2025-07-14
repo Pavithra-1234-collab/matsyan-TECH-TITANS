@@ -1,0 +1,88 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+
+feature_importance = rf.feature_importances_
+features = x_train.columns
+
+# Plot
+plt.figure(figsize=(8, 5))
+plt.barh(features, feature_importance)
+plt.xlabel("Importance Score")
+plt.title("Feature Importance (Random Forest)")
+plt.grid(True)
+plt.show()
+
+//Cross-Validation
+from sklearn.model_selection import cross_val_score
+
+scores = cross_val_score(rf, X, y, cv=5, scoring='r2')
+print("Cross-Validated R2:", scores)
+print("Mean R2:", scores.mean())
+
+//Hyperparameter Tuning
+from sklearn.model_selection import GridSearchCV
+
+param_grid = {
+    'max_depth': [2, 5, 10],
+    'n_estimators': [50, 100, 200]
+}
+
+grid = GridSearchCV(rf, param_grid, cv=3, scoring='r2')
+grid.fit(x_train, y_train)
+
+print("Best Params:", grid.best_params_)
+print("Best Score:", grid.best_score_)
+
+//Residual/Error Analysis
+//See where your model is doing poorly:
+import seaborn as sns
+
+residuals = y_test - y_rf_test_pred
+plt.figure(figsize=(6, 4))
+sns.histplot(residuals, kde=True)
+plt.title("Distribution of Prediction Errors")
+plt.xlabel("Error")
+plt.ylabel("Count")
+plt.grid(True)
+plt.show()
+
+// compare multiple models
+results_df = pd.DataFrame([
+    ['Linear Regression', lr_train_r2, lr_test_r2],
+    ['Random Forest', rf_train_r2, rf_test_r2],
+    # Add more here
+], columns=['Model', 'Train R2', 'Test R2'])
+
+print(results_df)
+
+//Model Explainability
+//here SHAP is used to explain predictions:
+import shap
+
+explainer = shap.Explainer(rf, x_test)
+shap_values = explainer(x_test)
+shap.summary_plot(shap_values, x_test)
+
+// installation of streamlit
+pip install streamlit
+
+# save as app.py
+import streamlit as st
+import pickle
+
+model = pickle.load(open('rf_model.pkl', 'rb'))
+
+st.title("Predictor App")
+
+# Example input
+feature1 = st.number_input("Feature 1")
+feature2 = st.number_input("Feature 2")
+# ...
+
+if st.button("Predict"):
+    result = model.predict([[feature1, feature2]])
+    st.success(f"Prediction: {result[0]}")
+
+
+
+
